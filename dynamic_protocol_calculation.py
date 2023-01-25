@@ -15,7 +15,7 @@ def set_dynamic_protocol(periods, level, start, duration, n_stimulus):
     start -- Myokit protocol parameter
     duration -- Myokit protocol parameter
     n_stimulus -- the number of consecutive calculated stimuli
-    without changing the period
+    without changing the stimulation period
     
     :return:
     myokit._protocol.Protocol
@@ -118,7 +118,7 @@ def get_restitution_curve(datalog, periods, n_stimulus):
     ordered according to the 'periods'
     periods -- an ordered list of stimulation periods in ms
     n_stimulus -- the number of consecutive calculated stimuli
-    without changing the period
+    without changing the stimulation period
     
     return:
     (periods, 
