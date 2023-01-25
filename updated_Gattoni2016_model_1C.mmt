@@ -1,0 +1,550 @@
+[[model]]
+author: Tatiana Nesterova
+name: model 1C
+desc: model 1C is updated Gattoni2016 (pandit_hinch) model. \
+ It differs from the original Gattonni2016 parametrically, see details in \
+     Rokeakh, R., Nesterova, T., Ushenin, K., Polyakova, E., Sonin, D., Galagudza, M., ... & Solovyova, O. (2021). \
+     Anatomical model of rat ventricles to study cardiac arrhythmias under infarction injury. Mathematics, 9(20), 2604\
+     (https://doi.org/10.3390/math9202604). \
+ The original Gattoni2016 model was converted into Myokit format from CellML (https://models.cellml.org/workspace/285) \
+ provided in their article by the authors of the model:
+     Gattoni, S., Røe, Å. T., Frisk, M., Louch, W. E., Niederer, S. A., & Smith, N. P. (2016).\
+     The calcium–frequency response in the rat ventricular myocyte: an experimental and modelling study. \
+     The Journal of physiology, 594(15), 4193-4224.(https://doi.org/10.1113/JP272011).
+
+# Initial values
+membrane.V                                                    = -8.38714424201012889e1
+sodium_current_m_gate.m                                       =  2.52188941082738321e-3
+sodium_current_h_gate.h                                       =  7.82492701067012075e-1
+sodium_current_j_gate.j                                       =  7.82445947305649425e-1
+Ca_independent_transient_outward_K_current_r_gate.r           =  1.63241141804609498e-3
+Ca_independent_transient_outward_K_current_s_gate.s           =  9.96325887108288955e-1
+Ca_independent_transient_outward_K_current_s_slow_gate.s_slow =  9.15467025782726429e-1
+steady_state_outward_K_current_r_ss_gate.r_ss                 =  2.18752677905347404e-3
+steady_state_outward_K_current_s_ss_gate.s_ss                 =  3.94014970184229929e-1
+hyperpolarisation_activated_current_y_gate.y                  =  5.11692255467351836e-3
+CaRU_reduced_states.z_1                                       =  9.89833878131463285e-1
+CaRU_reduced_states.z_2                                       =  8.57748468668827375e-3
+CaRU_reduced_states.z_3                                       =  1.57508306273173118e-3
+intracellular_ion_concentrations.Na_i                         =  8.01040596100322411
+intracellular_ion_concentrations.Ca_i                         =  1.29645358503470084e-4
+intracellular_ion_concentrations.K_i                          =  1.43031500123006083e2
+intracellular_ion_concentrations.Ca_SR                        =  1.95325129859911706
+intracellular_ion_concentrations.TRPN                         =  6.19440914984877716e-2
+
+
+[Background_Ca_current]
+E_Ca = common_constant.R * common_constant.T / (2 * common_constant.F) * log(extracellular_ion_concentrations.Ca_o / intracellular_ion_concentrations.Ca_i)
+    in [mV]
+g_CaB =  5.10875000000000000e-8 [mM/mV/ms]
+    in [mM/mV/ms]
+i_CaB1 = g_CaB * (E_Ca - membrane.V)
+    in [mM/ms]
+i_CaB2 = -i_CaB1 * 2 * common_constant.F * cell_geometry.Vmyo_uL
+    in [uA]
+
+[CaRU]
+J_L =  8.23803380618605332e-4
+    in [m^3/s (1e-15)]
+J_R = 0.02 [m^3/s (1e-15)]
+    in [m^3/s (1e-15)]
+N = 50000
+    in [1]
+g_D = 0.4 * 0.099 [m^3/s (1e-15)]
+    in [m^3/s (1e-15)]
+
+[CaRU_Transitions]
+K_L = 0.0006 [mM]
+    in [mM]
+K_RyR = 0.065 [mM]
+    in [mM]
+V_L = -9 [mV]
+    in [mV]
+a1 = 0.0625
+    in [1]
+alpha_m = phi_L / t_L
+    in [mS/uF]
+alpha_p = expVL / (t_L * (expVL + 1))
+    in [mS/uF]
+b1 = 14
+    in [1]
+beta_m = phi_R / t_R
+    in [mS/uF]
+beta_pcc = intracellular_ion_concentrations.Ca_i ^ 2 / (t_R * (intracellular_ion_concentrations.Ca_i ^ 2 + K_RyR ^ 2))
+    in [mS/uF]
+beta_poc = DS_Calcium_Concentrations.C_oc ^ 2 / (t_R * (DS_Calcium_Concentrations.C_oc ^ 2 + K_RyR ^ 2))
+    in [mS/uF]
+c = 0.01
+    in [1]
+d = 100
+    in [1]
+del_VL = 7 [mV]
+    in [mV]
+epsilon_m = b1 * (expVL + a1) / (tau_L * (b1 * expVL + a1))
+    in [mS/uF]
+epsilon_pcc = intracellular_ion_concentrations.Ca_i * (expVL + a1) / (tau_L * K_L * (expVL + 1))
+    in [mS/uF]
+epsilon_pco = DS_Calcium_Concentrations.C_co * (expVL + a1) / (tau_L * K_L * (expVL + 1))
+    in [mS/uF]
+expVL = exp((membrane.V - V_L) / del_VL)
+    in [1]
+mu_mcc = theta_R * d * (intracellular_ion_concentrations.Ca_i ^ 2 + c * K_RyR ^ 2) / (tau_R * (d * intracellular_ion_concentrations.Ca_i ^ 2 + c * K_RyR ^ 2))
+    in [mS/uF]
+mu_moc = theta_R * d * (DS_Calcium_Concentrations.C_oc ^ 2 + c * K_RyR ^ 2) / (tau_R * (d * DS_Calcium_Concentrations.C_oc ^ 2 + c * K_RyR ^ 2))
+    in [mS/uF]
+mu_pcc = (intracellular_ion_concentrations.Ca_i ^ 2 + c * K_RyR ^ 2) / (tau_R * (intracellular_ion_concentrations.Ca_i ^ 2 + K_RyR ^ 2))
+    in [mS/uF]
+mu_poc = (DS_Calcium_Concentrations.C_oc ^ 2 + c * K_RyR ^ 2) / (tau_R * (DS_Calcium_Concentrations.C_oc ^ 2 + K_RyR ^ 2))
+    in [mS/uF]
+phi_L = 11.5
+    in [1]
+phi_R = 0.05
+    in [1]
+t_L = 1 [ms]
+    in [ms]
+t_R = 1.17 [ms]
+    in [ms]
+tau_L = 1450 [ms]
+    in [ms]
+tau_R = 2.4 [ms]
+    in [ms]
+theta_R = 0.012
+    in [1]
+
+[CaRU_reduced_states]
+r_1 = CaRU_states.P1 * CaRU_Transitions.mu_poc + CaRU_states.P4 * CaRU_Transitions.mu_pcc
+    in [mS/uF]
+r_2 = (CaRU_Transitions.alpha_p * CaRU_Transitions.mu_moc + CaRU_Transitions.alpha_m * CaRU_Transitions.mu_mcc) / (CaRU_Transitions.alpha_p + CaRU_Transitions.alpha_m)
+    in [mS/uF]
+r_3 = CaRU_Transitions.beta_m * CaRU_Transitions.mu_pcc / (CaRU_Transitions.beta_m + CaRU_Transitions.beta_pcc)
+    in [mS/uF]
+r_4 = CaRU_Transitions.mu_mcc
+    in [mS/uF]
+r_5 = CaRU_states.P2 * CaRU_Transitions.epsilon_pco + CaRU_states.P4 * CaRU_Transitions.epsilon_pcc
+    in [mS/uF]
+r_6 = CaRU_Transitions.epsilon_m
+    in [mS/uF]
+r_7 = CaRU_Transitions.alpha_m * CaRU_Transitions.epsilon_pcc / (CaRU_Transitions.alpha_p + CaRU_Transitions.alpha_m)
+    in [mS/uF]
+r_8 = CaRU_Transitions.epsilon_m
+    in [mS/uF]
+dot(z_1) = -(r_1 + r_5) * z_1 + r_2 * z_2 + r_6 * z_3
+    in [1]
+dot(z_2) = r_1 * z_1 - (r_2 + r_7) * z_2 + r_8 * z_4
+    in [1]
+dot(z_3) = r_5 * z_1 - (r_6 + r_3) * z_3 + r_4 * z_4
+    in [1]
+z_4 = 1 - z_1 - z_2 - z_3
+    in [1]
+
+[CaRU_states]
+P1 = CaRU_Transitions.alpha_p * CaRU_Transitions.beta_m * (CaRU_Transitions.alpha_p + CaRU_Transitions.alpha_m + CaRU_Transitions.beta_m + CaRU_Transitions.beta_pcc) / denom
+    in [1]
+P2 = CaRU_Transitions.alpha_m * (CaRU_Transitions.beta_pcc * (CaRU_Transitions.alpha_m + CaRU_Transitions.beta_m + CaRU_Transitions.beta_poc) + CaRU_Transitions.beta_poc * CaRU_Transitions.alpha_p) / denom
+    in [1]
+P3 = CaRU_Transitions.alpha_p * (CaRU_Transitions.beta_poc * (CaRU_Transitions.alpha_p + CaRU_Transitions.beta_m + CaRU_Transitions.beta_pcc) + CaRU_Transitions.beta_pcc * CaRU_Transitions.alpha_m) / denom
+    in [1]
+P4 = CaRU_Transitions.alpha_m * CaRU_Transitions.beta_m * (CaRU_Transitions.alpha_m + CaRU_Transitions.alpha_p + CaRU_Transitions.beta_m + CaRU_Transitions.beta_poc) / denom
+    in [1]
+denom = (CaRU_Transitions.alpha_p + CaRU_Transitions.alpha_m) * ((CaRU_Transitions.alpha_m + CaRU_Transitions.beta_m + CaRU_Transitions.beta_poc) * (CaRU_Transitions.beta_m + CaRU_Transitions.beta_pcc) + CaRU_Transitions.alpha_p * (CaRU_Transitions.beta_m + CaRU_Transitions.beta_poc))
+    in [1/s^3 (1e+09)]
+
+[Ca_independent_transient_outward_K_current]
+E_K = common_constant.R * common_constant.T / common_constant.F * log(extracellular_ion_concentrations.K_o / intracellular_ion_concentrations.K_i)
+    in [mV]
+a = 0.883
+    in [1]
+b = 0.117
+    in [1]
+g_t =  3.49169498529917614e-5
+    in [mS]
+i_t = g_t * Ca_independent_transient_outward_K_current_r_gate.r * (a * Ca_independent_transient_outward_K_current_s_gate.s + b * Ca_independent_transient_outward_K_current_s_slow_gate.s_slow) * (membrane.V - E_K)
+    in [uA]
+
+[Ca_independent_transient_outward_K_current_r_gate]
+dot(r) = (r_infinity - r) / tau_r
+    in [1]
+r_infinity = 1 / (1 + exp((membrane.V + 10.6 [mV]) / -11.42 [mV]))
+    in [1]
+tau_r = 100 [ms] / (45.16 * exp(0.03577 [1/mV] * (membrane.V + 50 [mV])) + 98.9 * exp(-0.1 [1/mV] * (membrane.V + 38 [mV])))
+    in [ms]
+
+[Ca_independent_transient_outward_K_current_s_gate]
+dot(s) = (s_infinity - s) / tau_s
+    in [1]
+s_infinity = 1 / (1 + exp((membrane.V + 45.3 [mV]) / 6.8841 [mV]))
+    in [1]
+tau_s = 20 [ms] * exp(-((membrane.V + 70 [mV]) / 25 [mV]) ^ 2) + 35 [ms]
+    in [ms]
+
+[Ca_independent_transient_outward_K_current_s_slow_gate]
+dot(s_slow) = (s_slow_infinity - s_slow) / tau_s_slow
+    in [1]
+s_slow_infinity = 1 / (1 + exp((membrane.V + 45.3 [mV]) / 6.8841 [mV]))
+    in [1]
+tau_s_slow = 1300 [ms] * exp(-((membrane.V + 70 [mV]) / 30 [mV]) ^ 2) + 35 [ms]
+    in [ms]
+
+[DS_Calcium_Concentrations]
+C_cc = intracellular_ion_concentrations.Ca_i
+    in [mM]
+C_co = (intracellular_ion_concentrations.Ca_i + CaRU.J_R / CaRU.g_D * intracellular_ion_concentrations.Ca_SR) / (1 + CaRU.J_R / CaRU.g_D)
+    in [mM]
+C_oc = piecewise(abs(common_constant.FVRT_Ca) > 1e-5, (intracellular_ion_concentrations.Ca_i + CaRU.J_L / CaRU.g_D * extracellular_ion_concentrations.Ca_o * common_constant.FVRT_Ca * exp(-common_constant.FVRT_Ca) / (1 - exp(-common_constant.FVRT_Ca))) / (1 + CaRU.J_L / CaRU.g_D * common_constant.FVRT_Ca / (1 - exp(-common_constant.FVRT_Ca))), (intracellular_ion_concentrations.Ca_i + CaRU.J_L / CaRU.g_D * extracellular_ion_concentrations.Ca_o) / (1 + CaRU.J_L / CaRU.g_D))
+    in [mM]
+
+[LCC_and_RyR_fluxes]
+J_Loc = piecewise(abs(common_constant.FVRT_Ca) > 1e-5, CaRU.J_L * common_constant.FVRT_Ca / (1 - exp(-common_constant.FVRT_Ca)) * (extracellular_ion_concentrations.Ca_o * exp(-common_constant.FVRT_Ca) - intracellular_ion_concentrations.Ca_i) / (1 + CaRU.J_L / CaRU.g_D * common_constant.FVRT_Ca / (1 - exp(-common_constant.FVRT_Ca))), CaRU.J_L * 1e-5 / (1 - exp(-1e-5)) * (extracellular_ion_concentrations.Ca_o * exp(-1e-5) - intracellular_ion_concentrations.Ca_i) / (1 + CaRU.J_L / CaRU.g_D * 1e-5 / (1 - exp(-1e-5))))
+    in [kat (1e-15)]
+J_Loo = piecewise(abs(common_constant.FVRT_Ca) > 1e-5, CaRU.J_L * common_constant.FVRT_Ca / (1 - exp(-common_constant.FVRT_Ca)) * (extracellular_ion_concentrations.Ca_o * exp(-common_constant.FVRT_Ca) - intracellular_ion_concentrations.Ca_i + CaRU.J_R / CaRU.g_D * (extracellular_ion_concentrations.Ca_o * exp(-common_constant.FVRT_Ca) - intracellular_ion_concentrations.Ca_SR)) / (1 + CaRU.J_R / CaRU.g_D + CaRU.J_L / CaRU.g_D * common_constant.FVRT_Ca / (1 - exp(common_constant.FVRT_Ca))), CaRU.J_L * 1e-5 / (1 - exp(-1e-5)) * (extracellular_ion_concentrations.Ca_o * exp(-1e-5) - intracellular_ion_concentrations.Ca_i + CaRU.J_R / CaRU.g_D * (extracellular_ion_concentrations.Ca_o * exp(-1e-5) - intracellular_ion_concentrations.Ca_SR)) / (1 + CaRU.J_R / CaRU.g_D + CaRU.J_L / CaRU.g_D * 1e-5 / (1 - exp(-1e-5))))
+    in [kat (1e-15)]
+J_Rco = CaRU.J_R * (intracellular_ion_concentrations.Ca_SR - intracellular_ion_concentrations.Ca_i) / (1 + CaRU.J_R / CaRU.g_D)
+    in [kat (1e-15)]
+J_Roo = piecewise(abs(common_constant.FVRT_Ca) > 1e-5, CaRU.J_R * (intracellular_ion_concentrations.Ca_SR - intracellular_ion_concentrations.Ca_i + CaRU.J_L / CaRU.g_D * common_constant.FVRT_Ca / (1 - exp(-common_constant.FVRT_Ca)) * (intracellular_ion_concentrations.Ca_SR - extracellular_ion_concentrations.Ca_o * exp(-common_constant.FVRT_Ca))) / (1 + CaRU.J_R / CaRU.g_D + CaRU.J_L / CaRU.g_D * common_constant.FVRT_Ca / (1 - exp(-common_constant.FVRT_Ca))), CaRU.J_R * (intracellular_ion_concentrations.Ca_SR - intracellular_ion_concentrations.Ca_i + CaRU.J_L / CaRU.g_D * 1e-5 / (1 - exp(-1e-5)) * (intracellular_ion_concentrations.Ca_SR - extracellular_ion_concentrations.Ca_o * exp(-1e-5))) / (1 + CaRU.J_R / CaRU.g_D + CaRU.J_L / CaRU.g_D * 1e-5 / (1 - exp(-1e-5))))
+    in [kat (1e-15)]
+
+[LCC_current]
+J_L1 = LCC_and_RyR_fluxes.J_Loo * CaRU_states.P3 + LCC_and_RyR_fluxes.J_Loc * CaRU_states.P1
+    in [kat (1e-15)]
+J_L2 = LCC_and_RyR_fluxes.J_Loc * CaRU_Transitions.alpha_p / (CaRU_Transitions.alpha_p + CaRU_Transitions.alpha_m)
+    in [kat (1e-15)]
+i_LCC1 = (CaRU_reduced_states.z_1 * J_L1 + CaRU_reduced_states.z_2 * J_L2) * CaRU.N / cell_geometry.Vmyo
+    in [mM/ms]
+i_LCC2 = -i_LCC1 * 2 * common_constant.F * cell_geometry.Vmyo_uL
+    in [uA]
+
+[Na_Ca_Exchanger]
+K_mCa = 1.38 [mM]
+    in [mM]
+K_mNa = 87.5 [mM]
+    in [mM]
+eta = 0.35
+    in [1]
+g_NCX =  3.56355362685157814e-2
+    in [mM/ms]
+i_Ncx1 = g_NCX * (exp(eta * common_constant.FVRT) * intracellular_ion_concentrations.Na_i ^ 3 * extracellular_ion_concentrations.Ca_o - exp((eta - 1) * common_constant.FVRT) * extracellular_ion_concentrations.Na_o ^ 3 * intracellular_ion_concentrations.Ca_i) / ((extracellular_ion_concentrations.Na_o ^ 3 + K_mNa ^ 3) * (extracellular_ion_concentrations.Ca_o + K_mCa) * (1 + k_sat * exp((eta - 1) * common_constant.FVRT)))
+    in [mM/ms]
+i_Ncx2 = i_Ncx1 * common_constant.F * cell_geometry.Vmyo_uL
+    in [uA]
+k_sat = 0.1
+    in [1]
+
+[RyR_current]
+J_R1 = CaRU_states.P3 * LCC_and_RyR_fluxes.J_Roo + LCC_and_RyR_fluxes.J_Rco * CaRU_states.P2
+    in [kat (1e-15)]
+J_R3 = LCC_and_RyR_fluxes.J_Rco * CaRU_Transitions.beta_pcc / (CaRU_Transitions.beta_m + CaRU_Transitions.beta_pcc)
+    in [kat (1e-15)]
+i_RyR1 = (CaRU_reduced_states.z_1 * J_R1 + CaRU_reduced_states.z_3 * J_R3) * CaRU.N / cell_geometry.Vmyo
+    in [mM/ms]
+i_RyR2 = i_RyR1
+    in [mM/ms]
+
+[SERCA]
+K_SERCA = 0.00045 [mM]
+    in [mM]
+g_SERCA =  3.37210998309526034e-4
+    in [mM/ms]
+i_SERCA = g_SERCA * intracellular_ion_concentrations.Ca_i ^ 2 / (K_SERCA ^ 2 + intracellular_ion_concentrations.Ca_i ^ 2)
+    in [mM/ms]
+
+[SR_Ca_leak_current]
+g_SRl = 7.11e-6 [mS/uF]
+    in [mS/uF]
+i_SR = g_SRl * (intracellular_ion_concentrations.Ca_SR - intracellular_ion_concentrations.Ca_i)
+    in [mM/ms]
+
+[SarcolemMal_Ca_pump]
+K_mpCa = 0.00035 [mM]
+    in [mM]
+g_pCa = 5e-6 [mM/ms]
+    in [mM/ms]
+i_pCa1 = g_pCa * intracellular_ion_concentrations.Ca_i / (K_mpCa + intracellular_ion_concentrations.Ca_i)
+    in [mM/ms]
+i_pCa2 = i_pCa1 * 2 * common_constant.F * cell_geometry.Vmyo_uL
+    in [uA]
+
+[background_currents]
+g_B_K = 1.38e-7 [mS]
+    in [mS]
+g_B_Na = 8.015e-8 [mS]
+    in [mS]
+i_B = i_B_Na + i_B_K
+    in [uA]
+i_B_K = g_B_K * (membrane.V - Ca_independent_transient_outward_K_current.E_K)
+    in [uA]
+i_B_Na = g_B_Na * (membrane.V - sodium_current.E_Na)
+    in [uA]
+
+[calmodulin_Ca_buffer]
+B_CMDN = 0.05 [mM]
+    in [mM]
+EGTA_tot = 0 [mM]
+    in [mM]
+KmEGTA = 0.00015 [mM]
+    in [mM]
+beta_CMDN = (1 + k_CMDN * B_CMDN / (k_CMDN + intracellular_ion_concentrations.Ca_i) ^ 2 + EGTA_tot * KmEGTA / (KmEGTA + intracellular_ion_concentrations.Ca_i) ^ 2) ^ (-1)
+    in [1]
+k_CMDN = 0.002382 [mM]
+    in [mM]
+
+[cell_geometry]
+VSR_uL = 2.098e-6 [uL]
+    in [uL]
+Vmyo = 25850 [um^3]
+    in [um^3]
+Vmyo_uL = 2.585e-5 [uL]
+    in [uL]
+
+[common_constant]
+Cm = 0.0001 [uF]
+    in [uF]
+F = 96487 [C/mol]
+    in [C/mol]
+FVRT = F * membrane.V / (R * T)
+    in [1]
+FVRT_Ca = 2 * FVRT
+    in [1]
+R = 8314 [mJ/mol/K]
+    in [mJ/mol/K]
+T = 310 [K]
+    in [K]
+
+[environment]
+time = 0 [ms] bind time
+    in [ms]
+
+[extracellular_ion_concentrations]
+Ca_o = 1.8 [mM]
+    in [mM]
+K_o = 5.4 [mM]
+    in [mM]
+Na_o = 140 [mM]
+    in [mM]
+
+[hyperpolarisation_activated_current]
+f_K = 1 - f_Na
+    in [1]
+f_Na = 0.2
+    in [1]
+g_f = 1.45e-6 [mS]
+    in [mS]
+i_f = i_f_Na + i_f_K
+    in [uA]
+i_f_K = g_f * hyperpolarisation_activated_current_y_gate.y * f_K * (membrane.V - Ca_independent_transient_outward_K_current.E_K)
+    in [uA]
+i_f_Na = g_f * hyperpolarisation_activated_current_y_gate.y * f_Na * (membrane.V - sodium_current.E_Na)
+    in [uA]
+
+[hyperpolarisation_activated_current_y_gate]
+tau_y = 1000 [ms] / (0.11885 * exp((membrane.V + 80 [mV]) / 28.37 [mV]) + 0.5623 * exp((membrane.V + 80 [mV]) / -14.19 [mV]))
+    in [ms]
+dot(y) = (y_infinity - y) / tau_y
+    in [1]
+y_infinity = 1 / (1 + exp((membrane.V + 138.6 [mV]) / 10.48 [mV]))
+    in [1]
+
+[intracellular_ion_concentrations]
+dot(Ca_SR) = cell_geometry.Vmyo_uL / cell_geometry.VSR_uL * (-RyR_current.i_RyR2 + SERCA.i_SERCA - SR_Ca_leak_current.i_SR)
+    in [mM]
+dot(Ca_i) = calmodulin_Ca_buffer.beta_CMDN * (RyR_current.i_RyR2 - SERCA.i_SERCA + SR_Ca_leak_current.i_SR + troponin_Ca_buffer.i_TRPN - (-2 * Na_Ca_Exchanger.i_Ncx2 + LCC_current.i_LCC2 + SarcolemMal_Ca_pump.i_pCa2 + Background_Ca_current.i_CaB2) / (2 * cell_geometry.Vmyo_uL * common_constant.F))
+    in [mM]
+dot(K_i) = -(membrane.i_Stim + steady_state_outward_K_current.i_ss + background_currents.i_B_K + Ca_independent_transient_outward_K_current.i_t + inward_rectifier.i_K1 + hyperpolarisation_activated_current.i_f_K + -2 * sodium_potassium_pump.i_NaK) * 1 / (cell_geometry.Vmyo_uL * common_constant.F)
+    in [mM]
+dot(Na_i) = -(sodium_current.i_Na + background_currents.i_B_Na + Na_Ca_Exchanger.i_Ncx2 * 3 + sodium_potassium_pump.i_NaK * 3 + hyperpolarisation_activated_current.i_f_Na) * 1 / (cell_geometry.Vmyo_uL * common_constant.F)
+    in [mM]
+dot(TRPN) = troponin_Ca_buffer.i_TRPN
+    in [mM]
+
+[inward_rectifier]
+g_K1 = 4e-5 [mS]
+    in [mS]
+i_K1 = (0.048 [uA] / (exp((membrane.V + 37 [mV]) / 25 [mV]) + exp((membrane.V + 37 [mV]) / -25 [mV])) + 0.01 [uA]) * 0.001 / (1 + exp((membrane.V - (Ca_independent_transient_outward_K_current.E_K + 76.77 [mV])) / -17 [mV])) + g_K1 * (membrane.V - (Ca_independent_transient_outward_K_current.E_K + 1.73 [mV])) / ((1 + exp(1.613 * common_constant.F * (membrane.V - (Ca_independent_transient_outward_K_current.E_K + 1.73 [mV])) / (common_constant.R * common_constant.T))) * (1 + exp((extracellular_ion_concentrations.K_o - 0.9988 [mM]) / -0.124 [mM])))
+    in [uA]
+
+[membrane]
+dot(V) = -(i_ion + i_Stim + i_diff) / common_constant.Cm
+    in [mV]
+    label membrane_potential
+i_Stim = pace * stim_amplitude
+    in [uA]
+i_diff = 0 bind diffusion_current
+i_ion = sodium_current.i_Na + Ca_independent_transient_outward_K_current.i_t + steady_state_outward_K_current.i_ss + hyperpolarisation_activated_current.i_f + inward_rectifier.i_K1 + background_currents.i_B_Na + background_currents.i_B_K + sodium_potassium_pump.i_NaK + Background_Ca_current.i_CaB2 + Na_Ca_Exchanger.i_Ncx2 + SarcolemMal_Ca_pump.i_pCa2 + LCC_current.i_LCC2
+    in [uA]
+    label cellular_current
+pace = 0 bind pace
+    in [1]
+stim_amplitude = -0.0012 [uA]
+    in [uA]
+
+[sodium_current]
+E_Na = common_constant.R * common_constant.T / common_constant.F * log(extracellular_ion_concentrations.Na_o / intracellular_ion_concentrations.Na_i)
+    in [mV]
+g_Na = 0.0007 [mS]
+    in [mS]
+i_Na = g_Na * sodium_current_m_gate.m ^ 3 * sodium_current_h_gate.h * sodium_current_j_gate.j * (membrane.V - E_Na)
+    in [uA]
+
+[sodium_current_h_gate]
+dot(h) = (h_infinity - h) / tau_h
+    in [1]
+h_infinity = 1 / (1 + exp((membrane.V + 76.1 [mV]) / 6.07 [mV]))
+    in [1]
+tau_h = piecewise(membrane.V >= -40 [mV], 0.4537 [ms] * (1 + exp(-(membrane.V + 10.66 [mV]) / 11.1 [mV])), 3.49 [ms] / (0.135 * exp(-(membrane.V + 80 [mV]) / 6.8 [mV]) + 3.56 * exp(0.079 [1/mV] * membrane.V) + 310000 * exp(0.35 [1/mV] * membrane.V)))
+    in [ms]
+
+[sodium_current_j_gate]
+dot(j) = (j_infinity - j) / tau_j
+    in [1]
+j_infinity = 1 / (1 + exp((membrane.V + 76.1 [mV]) / 6.07 [mV]))
+    in [1]
+tau_j = piecewise(membrane.V >= -40 [mV], 11.63 [ms] * (1 + exp(-0.1 [1/mV] * (membrane.V + 32 [mV]))) / exp(-2.535e-7 [1/mV] * membrane.V), 3.49 [ms] / ((membrane.V + 37.78 [mV]) / (1 + exp(0.311 [1/mV] * (membrane.V + 79.23 [mV]))) * (-127140 [1/mV] * exp(0.2444 [1/mV] * membrane.V) - 3.474e-5 [1/mV] * exp(-0.04391 [1/mV] * membrane.V)) + 0.1212 * exp(-0.01052 [1/mV] * membrane.V) / (1 + exp(-0.1378 [1/mV] * (membrane.V + 40.14 [mV])))))
+    in [ms]
+
+[sodium_current_m_gate]
+dot(m) = (m_infinity - m) / tau_m
+    in [1]
+m_infinity = 1 / (1 + exp((membrane.V + 45 [mV]) / -6.5 [mV]))
+    in [1]
+tau_m = piecewise(abs(membrane.V - -47.13 [mV]) <= 1e-5,  1.51018184962125546e-1, 1.36 [ms] / (0.32 [1/mV] * (membrane.V + 47.13 [mV]) / (1 - exp(-0.1 [1/mV] * (membrane.V + 47.13 [mV]))) + 0.08 * exp(-membrane.V / 11 [mV])))
+    in [ms]
+
+[sodium_potassium_pump]
+Delta = 0.3
+    in [1]
+KdNaes = 880 [mM]
+    in [mM]
+KdNaio = 19 [mM]
+    in [mM]
+KdNais = 22 [mM]
+    in [mM]
+alpha = 1.8 [mM]
+    in [mM]
+gamma1 = 3.6
+    in [1]
+i_NaK = i_NaK_max * (gamma1 + 1) / nu_1
+    in [uA]
+i_NaK_max =  2.49241227423355801e-3
+    in [uA]
+nu_1 = gamma1 * (1 + KdNaio / intracellular_ion_concentrations.Na_i) ^ 2 * (1 + KdNais / intracellular_ion_concentrations.Na_i * exp(-Delta * common_constant.F * membrane.V / common_constant.R / common_constant.T)) + (1 + alpha / extracellular_ion_concentrations.K_o) ^ 2 * (1 + extracellular_ion_concentrations.Na_o / KdNaes * exp(-(1 - Delta) * common_constant.F * membrane.V / common_constant.R / common_constant.T))
+    in [1]
+
+[steady_state_outward_K_current]
+g_ss =  8.66673665939788998e-6
+    in [mS]
+i_ss = g_ss * steady_state_outward_K_current_r_ss_gate.r_ss * steady_state_outward_K_current_s_ss_gate.s_ss * (membrane.V - Ca_independent_transient_outward_K_current.E_K)
+    in [uA]
+
+[steady_state_outward_K_current_r_ss_gate]
+dot(r_ss) = (r_ss_infinity - r_ss) / tau_r_ss
+    in [1]
+r_ss_infinity = 1 / (1 + exp((membrane.V + 11.5 [mV]) / -11.82 [mV]))
+    in [1]
+tau_r_ss = 10000 [ms] / (45.16 * exp(0.03577 [1/mV] * (membrane.V + 50 [mV])) + 98.9 * exp(-0.1 [1/mV] * (membrane.V + 38 [mV])))
+    in [ms]
+
+[steady_state_outward_K_current_s_ss_gate]
+dot(s_ss) = (s_ss_infinity - s_ss) / tau_s_ss
+    in [1]
+s_ss_infinity = 1 / (1 + exp((membrane.V + 87.5 [mV]) / 10.3 [mV]))
+    in [1]
+tau_s_ss = 2100 [ms]
+    in [ms]
+
+[troponin_Ca_buffer]
+B_TRPN = 0.07 [mM]
+    in [mM]
+i_TRPN = k_m_TRPN * (B_TRPN - intracellular_ion_concentrations.TRPN) - k_p_TRPN * intracellular_ion_concentrations.TRPN * intracellular_ion_concentrations.Ca_i
+    in [mM/ms]
+k_m_TRPN = 0.04 [mS/uF]
+    in [mS/uF]
+k_p_TRPN = 40 [1/mM/ms]
+    in [1/mM/ms]
+
+[[protocol]]
+# Level  Start    Length   Period   Multiplier
+1.0      0.0      3.0      1000.0   0
+
+[[script]]
+
+import myokit
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+import sys
+sys.path.append('./')
+from dynamic_protocol_calculation import *
+
+# calculation parameters
+is_datalog_saver = False
+model_ids = [1,2,3,4]
+model_types = ['C', 'L']
+max_step = None
+n_stimulus = 40
+log = ['membrane.V']
+
+parameter_filename = './model_parameters/model{}{}_parameters.csv'
+steadystate_filename = './model_parameters/steady_states.csv'
+
+# figure parameters
+line_styles = {'C': '--', 'L': '-'}
+colors = {'C': 'b', 'L': 'r'}
+ylim = (0,300)
+xticks = [90, 250, 500, 1000]
+yticks = [50, 100, 200, 250]
+xlabel = 'BCL (ms)'
+ylabel = 'APD90 (ms)'
+
+# dynamic protocol simulation for models 1C-4C, 1L-4L
+model = get_model()
+protocol = get_protocol()
+duration = protocol.events()[0].duration()
+steady_states = pd.read_csv(steadystate_filename)
+
+datalog = {}
+for model_id in model_ids:
+    for model_type in model_types:
+        label = f'{model_id}{model_type}'
+        parameters = pd.read_csv(
+            parameter_filename.format(model_id,model_type), index_col=0
+        )
+        datalog[label] = run_dynamic_0D_protocol(
+            model, parameters,
+            n_stimulus, duration,
+            state=steady_states[label], maxstep=max_step, log=log,
+        )
+if is_datalog_saver:
+    np.savez('datalog.npz', datalog=datalog)
+
+# calculating and drawing APD restitution curves for models
+sns.set(font_scale=2.25, style='whitegrid')
+
+nrow = 1
+ncol = len(model_ids)
+fig = plt.figure(figsize=(ncol*6, nrow*6))
+periods = parameters.index
+for ax_index, model_id in enumerate(model_ids, 1):
+    ax = plt.subplot(nrow,ncol,ax_index)
+    
+    for model_type in model_types:
+        label = f'{model_id}{model_type}'
+        periods, mean, std = get_restitution_curve(datalog[label], periods, n_stimulus)
+                
+        plt.errorbar(periods, mean, std, label=model_type,
+                     ls=line_styles[model_type], c=colors[model_type],
+                     marker='o', lw=2, ms=7, capsize=5
+                    )
+    
+    plt.ylim(*ylim)
+    plt.xticks(xticks)
+    plt.yticks(yticks)
+    if ax_index == 1:
+        plt.ylabel(ylabel)
+    if ax_index == ncol:
+        plt.legend()   
+    plt.xlabel(xlabel)
+    plt.title(f'Model {model_id}')
+
+fig.savefig('rc.png', format='png', facecolor='#fff', bbox_inches='tight')
+
