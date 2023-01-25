@@ -46,7 +46,7 @@ Parameters:
                      ordered according to the parameter table indexes}
  - model_ids - list of model numbers involved in the calculations (for example, [1,2,3,4], [1,4], [3]) 
  - model_types - ['C', 'L'], ['C'] or ['L'] - model types involved in the calculations (C - control, L - under application of leptin)
- - max_step -- maximum step size for CVODE (the default value in Myokit is None, for the simulations presented in the article a step of 0.005 was used)
+ - max_step -- maximum step size for CVODE. (In the article the 0.005 max_step was used and the computations took some time. The default value in Myokit is None which here stands for infinity; the computations are much faster but the results may differ)
  - n_stimulus -- the number of consecutive calculated stimuli without changing the stimulation period (set to 40)
  - log -- variables for which the result should be written
 
