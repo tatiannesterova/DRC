@@ -1,11 +1,11 @@
 # DRC
 
-    *****APD Dynamic Restitution Curve*****
+*****APD Dynamic Restitution Curve*****
 
 This script simulates and plots the APD restitution curve according to a protocol with gradually decreasing stimulation period (dynamic protocol) in rat ventricular cardiomyocyte models in control (1C-4C) and under leptin (1L-4L).
 
 
-    ***Dependencies Installation***
+***Dependencies Installation***
 
 The code requires:
  - Python 3 interpreter
@@ -16,7 +16,7 @@ The code requires:
  - seaborn
 
 
-    ***Run Variants***
+***Run Variants***
 
 1. run the script in the model "updated_Gattoni2016_model_1C.mmt" through Myokit IDE (button "Run embedded script")
 2. run the python script: python3 dynamic_protocol_calculation.py
@@ -24,7 +24,7 @@ The code requires:
 The result of both scripts is the figure "rc.png" similar to Figure 2 from the article, which shows the APD90 restitution curves in the Models 1–4 in the control (C, blue) and under leptin (L, red).
 
 
-    ***Model***
+***Model***
 
 Section [[model]] of the model "updated_Gattoni2016_model_1C.mmt" contains a right hand sides description of the 1C model for a 1 Hz stimulation frequency, which is a modification of the Gattoni2016 ionic model of ventricular rat cardiomyocytes. The original Gattoni2016 model was converted into Myokit format from CellML (https://models.cellml.org/workspace/285) provided in their article by the authors of the model (https://doi.org/10.1113/JP272011).
 
@@ -35,7 +35,7 @@ The modified parameter values of models 1C-4C and 1L-4L at each stimulation peri
 The steady state and parameter values are passed to the "run_dynamic_0D_protocol" function, where they replace the corresponding parameter values from the model description in [[model]]. 
 
 
-    ***Script Parameters***
+***Script Parameters***
 
 The script parameters are after the comment "# calculation parameters" are: 
  - on the "Embedded script" tab when running through the Myokit IDE
@@ -51,6 +51,6 @@ Parameters:
  - log -- variables for which the result should be written
 
 
-    ***Implementation of a Dynamic Stimulation Protocol***
+***Implementation of a Dynamic Stimulation Protocol***
 
 see the documentation lines in the module dynamic_protocol_calculation
