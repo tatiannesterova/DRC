@@ -106,7 +106,7 @@ def apd(signal, level):
         return np.inf
     finish = np.where(signal[start:] < level)[0][0]
 
-    return finish - start
+    return finish
 
 
 def get_restitution_curve(datalog, periods, n_stimulus):
